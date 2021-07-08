@@ -5,6 +5,8 @@ import { AuthProvider } from "./context/AuthContext";
 
 import PrivateRoute from "./components/PrivateRoute";
 
+import Dashboard from "./screens/main/Dashboard";
+
 import Profile from "./screens/profile/Profile";
 import UpdateProfile from "./screens/profile/UpdateProfile";
 
@@ -17,8 +19,11 @@ function App() {
     <Router>
       <AuthProvider>
         <Switch>
+          {/* Main Screens */}
+          <PrivateRoute exact path="/" component={Dashboard} />
+
           {/* Profile Screens */}
-          <PrivateRoute exact path="/profile" component={Profile} />
+          <PrivateRoute path="/profile" component={Profile} />
           <PrivateRoute path="/update-profile" component={UpdateProfile} />
 
           {/* Authentication Screens */}
