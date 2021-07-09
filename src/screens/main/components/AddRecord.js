@@ -2,16 +2,20 @@ import React, { useState, useRef, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 import bsCustomFileInput from "bs-custom-file-input";
 
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 
-import { storage, db } from "../../firebase";
+import { storage, db } from "../../../firebase";
+
+import { calendar, months } from "../functions/calendar";
 
 const AddRecord = () => {
   const [modal, setModal] = useState(false);
   const [fileName, setFileName] = useState("Person's Picture");
   const nameRef = useRef();
+  const monthRef = useRef();
   const dateRef = useRef();
   const fileRef = useRef();
+  const [newDates, setNewDates] = useState([]);
 
   const { currentUser } = useAuth();
 
@@ -26,7 +30,8 @@ const AddRecord = () => {
     e.preventDefault();
     const file = fileRef.current.files[0];
     const name = nameRef.current.value;
-    const dob = dateRef.current.value;
+    const date = dateRef.current.value;
+    const month = monthRef.current.value;
 
     const uploadFile = storage
       .ref(`/files/${currentUser.uid}/${fileName}`)
@@ -41,7 +46,8 @@ const AddRecord = () => {
           db.birthdays.add({
             userId: currentUser.uid,
             personName: name,
-            dob: dob,
+            date: date,
+            month: month,
             fileName: fileName,
             picture: url,
             date_created: db.getCurrentTimestamp(),
@@ -58,6 +64,23 @@ const AddRecord = () => {
       let file = fileRef.current.files[0];
       setFileName(file.name);
     }
+  };
+
+  const handleMonthChange = () => {
+    let dates = 0;
+    if (monthRef.current.value) {
+      dates = calendar[monthRef.current.value];
+    }
+
+    let newDates = [];
+    for (let i = 1; i <= dates; i++) {
+      newDates.push(
+        <option value={i} key={i - 1}>
+          {i}
+        </option>
+      );
+    }
+    setNewDates(newDates);
   };
 
   useEffect(() => {
@@ -77,9 +100,33 @@ const AddRecord = () => {
               <Form.Control type="text" required ref={nameRef} />
             </Form.Group>
 
-            <Form.Group className="mb-2">
+            <Form.Group>
               <Form.Label>Date of Birth</Form.Label>
-              <Form.Control type="date" required ref={dateRef} />
+              <div className="d-flex w-100">
+                <Form.Control
+                  as="select"
+                  defaultValue="Month..."
+                  className="mr-2"
+                  ref={monthRef}
+                  onChange={handleMonthChange}
+                >
+                  <option value="">Month...</option>
+                  {months.map((month, index) => (
+                    <option value={month} key={index}>
+                      {month}
+                    </option>
+                  ))}
+                </Form.Control>
+                <Form.Control
+                  as="select"
+                  defaultValue="Date..."
+                  className="ml-2"
+                  ref={dateRef}
+                >
+                  <option value="">Date...</option>
+                  {newDates}
+                </Form.Control>
+              </div>
             </Form.Group>
 
             <Form.Group className="custom-file mb-2">
